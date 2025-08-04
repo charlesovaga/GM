@@ -30,13 +30,13 @@ export default function Modal({ isOpen, onClose }) {
       <div className="bg-white rounded-lg w-[460px] h-[250px] shadow-md flex flex-col items-center justify-center text-sm px-5 py-4">
         <button
           onClick={() => navigate('/dashboard')}
-          className="font-medium text-center mb-4 text-blue-600 hover:underline"
+          className="font-medium text-center text-mdco mb-4 text-gray-600 hover:underline"
         >
           View report in Dashboard
         </button>
         <button
           onClick={onClose}
-          className="text-[13px] text-blue-600 hover:underline"
+          className="text-[13px] text-gray-600 hover:underline"
         >
           Close
         </button>

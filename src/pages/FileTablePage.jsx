@@ -100,7 +100,7 @@ import { useState } from "react";
 import useCourseStore from "./courseStore";
 import Modal from "../components/Modal";
 
-function FileTablePage({ category, onUploadMore, gradingClicked }) {
+function FileTablePage({ category, onUploadMore, gradingClicked, activeFileName }) {
 
   const uploadedFiles = useCourseStore((state) => state.uploadedFiles);
   const deleteUploadedFile = useCourseStore((state) => state.deleteUploadedFile);
@@ -124,7 +124,13 @@ function FileTablePage({ category, onUploadMore, gradingClicked }) {
 
   return (
     <div className="bg-white p-6 rounded h-[550px] flex flex-col">
-      <h2 className="text-xl font-semibold mb-4">{category} Files</h2>
+  <h2 className="text-xl font-semibold mb-4">
+  {gradingClicked && activeFileName
+    ? `Task: ${activeFileName}`
+    : `${category} Files`}
+</h2>
+
+
 
       {/* Show table only if NOT Grading Tasks */}
       {!isGrading && (
@@ -146,7 +152,7 @@ function FileTablePage({ category, onUploadMore, gradingClicked }) {
                  key={index}
                  className="hover:bg-gray-50 transition-all duration-150"
                >
-                 <td className="px-4 py-3 font-medium text-gray-900 truncate max-w-[250px]">
+                 <td className="px-4 py-3 font-medium text-gray-600 truncate max-w-[250px]">
                    {file.name}
                  </td>
                  <td className="px-4 py-3 text-gray-500">{file.size}</td>
@@ -189,7 +195,7 @@ function FileTablePage({ category, onUploadMore, gradingClicked }) {
 ) : (
   <button
     onClick={onUploadMore}
-    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm"
+    className="bg-gray-300 text-gray-600 px-4 py-2 rounded hover:cursor-pointer text-sm"
   >
     Upload more files
   </button>

@@ -174,7 +174,7 @@
 // //               {courses.map((course, idx) => (
 // //                 <li
 // //                   key={idx}
-// //                   className="px-2 py-1 bg-gray-100 rounded text-gray-900 font-medium"
+// //                   className="px-2 py-1 bg-gray-100 rounded text-gray-600 font-medium"
 // //                 >
 // //                   {course.title}
 // //                 </li>
@@ -467,6 +467,8 @@ const [selectedCategory, setSelectedCategory] = useState(null);
 const filesExist = uploadedFiles[uploadPanelTitle]?.length > 0;
 const [justSelectedCategory, setJustSelectedCategory] = useState(false);
 const [gradingClicked, setGradingClicked] = useState(false);
+const [activeFileName, setActiveFileName] = useState(null);
+
 
 
 
@@ -538,7 +540,7 @@ function getInitials(name) {
   >
   <img src={GMLogo} alt="GM" className="w-5 h-5" />
     {!collapsed && (
-      <span className="font-semibold text-gray-700 select-none">GM</span>
+      <span className="font-semibold text-gray-600 select-none">GM</span>
     )}
   </div>
 
@@ -548,10 +550,10 @@ function getInitials(name) {
     courses.length > 0 ? (
       <div className="mb-2">
         <div className="flex items-center justify-between mb-2">
-          <h2 className="text-sm font-semibold text-gray-700">Courses</h2>
+          <h2 className="text-sm font-semibold text-gray-600">Courses</h2>
           <button
             onClick={() => setShowCourseForm(true)}
-            className="text-sm text-blue-600 hover:underline"
+            className="text-xl text-black hover:underline"
           >
             +
           </button>
@@ -586,9 +588,9 @@ function getInitials(name) {
   <ul className="ml-6 mt-2 space-y-1 text-gray-600">
    <li
 onClick={() => {
-    setUploadPanelTitle("Syllables");
-    setSelectedCategory("Syllables");
-    const files = uploadedFiles["Syllables"] || [];
+    setUploadPanelTitle("Syllabus");
+    setSelectedCategory("Syllabus");
+    const files = uploadedFiles["Syllabus"] || [];
   
     if (files.length === 0) {
       setShowUploadPanel(true);     // Only trigger modal if no file yet
@@ -601,7 +603,7 @@ onClick={() => {
   
   className="hover:underline cursor-pointer"
 >
-  📘 Syllables
+  📘 Syllabus
 </li>
 
 <li
@@ -642,6 +644,7 @@ onClick={() => {
       setUploadPanelTitle("Grading Tasks");
       setSelectedCategory("Grading Tasks");
       setGradingClicked(false); // ✅ reset when clicked from sidebar
+      
   
       const files = uploadedFiles["Grading Tasks"] || [];
       if (files.length === 0) {
@@ -713,6 +716,7 @@ onClick={() => {
             setSelectedCategory("Grading Tasks");
             // setShowModal(true); 
             setGradingClicked(true);
+            setActiveFileName(file.name);
           }}
         >
           {file.name}
@@ -729,8 +733,47 @@ onClick={() => {
             transition={{ duration: 0.3 }}
             className="ml-6 mt-1 space-y-1 text-gray-400 text-sm overflow-hidden"
           >
-            <li className="hover:underline cursor-pointer">📝 Rubric</li>
-            <li className="hover:underline cursor-pointer">📁 Student Submissions</li>
+           <li
+  className="hover:underline cursor-pointer"
+  onClick={() => {
+    setUploadPanelTitle("Rubric");
+    setSelectedCategory("Rubric");
+
+    const files = uploadedFiles["Rubric"] || [];
+
+    if (files.length === 0) {
+      setShowUploadPanel(true);
+      setJustSelectedCategory(true);
+    } else {
+      setShowUploadPanel(false);
+      setJustSelectedCategory(false);
+    }
+  }}
+>
+  📝 Rubric
+</li>
+
+<li
+  className="hover:underline cursor-pointer"
+  onClick={() => {
+    setUploadPanelTitle("Student Submissions");
+    setSelectedCategory("Student Submissions");
+
+    const files = uploadedFiles["Student Submissions"] || [];
+
+    if (files.length === 0) {
+      setShowUploadPanel(true);
+      setJustSelectedCategory(true);
+    } else {
+      setShowUploadPanel(false);
+      setJustSelectedCategory(false);
+    }
+  }}
+>
+📁 Student Submissions
+</li>
+
+        
           </motion.ul>
         )}
       </AnimatePresence>
@@ -832,9 +875,9 @@ onClick={() => {
         <div className="flex flex-1 items-center justify-center mt-auto mb-20">
         <button
           onClick={() => setShowCourseForm(true)}
-          className="px-4 py-2 bg-gray-100 text-black text-sm font-semibold rounded hover:cursor-pointer flex items-center gap-2 transition"
+          className="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-semibold rounded hover:cursor-pointer flex items-center gap-2 transition"
         >
-          <span className="text-xl leading-none">+</span>
+          <span className="text-xl text-gray-600 leading-none">+</span>
           Create a new course
         </button>
       </div>
@@ -860,7 +903,7 @@ onClick={() => {
 
   {/* Full name text only when sidebar is expanded */}
   {!collapsed && (
-    <span className="ml-2 text-gray-700 font-medium select-none">
+    <span className="ml-2 text-gray-600 font-medium select-none">
       {userFullName}
     </span>
   )}
@@ -878,25 +921,25 @@ onClick={() => {
             style={{ maxWidth: 400 }}
           >
             
-            <h2 className="text-lg font-semibold mb-4">Create Course</h2>
+            <h2 className="text-lg text-gray-600 font-semibold mb-4">Course</h2>
 
             <input
               type="text"
-              placeholder="Course Title"
+              placeholder="Title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full border p-2 rounded mb-2"
+              className="w-full border border-gray-300 p-2 rounded mb-2"
             />
             {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
 
             <textarea
-              placeholder="Enter a short description"
+              placeholder="Description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full border p-2 rounded mb-4 h-24 resize-none"
+              className="w-full border border-gray-300 p-2 rounded mb-4 h-24 resize-none"
             />
 
-            <div className="flex justify-end space-x-2">
+            <div className="flex justify-center space-x-2">
               <button
                 onClick={() => setShowCourseForm(false)}
                 className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
@@ -905,7 +948,7 @@ onClick={() => {
               </button>
               <button
                 onClick={handleSave}
-                className="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-900"
+                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
               >
                 Save
               </button>
@@ -930,7 +973,8 @@ onClick={() => {
         setShowUploadPanel(true);
         setJustSelectedCategory(false);
       }}
-      gradingClicked={gradingClicked} // ✅ Pass as prop
+      gradingClicked={gradingClicked}
+      activeFileName={activeFileName} // ✅ Pass as prop
     />
     
     )}

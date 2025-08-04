@@ -212,7 +212,7 @@ function UploadPanel({ onClose, title, onFilesUploaded, category }) {
         <span className="text-sm text-gray-600 mb-4">or</span>
 
         <div
-          className={`text-gray-700 text-sm p-4 border-2 border-dashed rounded ${
+          className={`text-gray-600 text-sm p-4 border-2 border-dashed rounded ${
             isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300"
           }`}
         >
