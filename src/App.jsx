@@ -4,6 +4,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import SignUpPage from "./pages/SignupPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import HomePage from "./pages/HomePage.jsx";
+import Dashboard from "./components/Dashboard.jsx"
 import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
 // import EmailVerificationPage from "./pages/EmailVerificationPage";
 
@@ -125,6 +126,7 @@ function App() {
              
               }
             />
+               <Route path="/dashboard" element={<Dashboard />} />
             {/* <Route
               path="/reset-password/:token"
               element={

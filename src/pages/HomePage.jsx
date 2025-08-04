@@ -466,6 +466,7 @@ const addFiles = useCourseStore((state) => state.addFiles);
 const [selectedCategory, setSelectedCategory] = useState(null);
 const filesExist = uploadedFiles[uploadPanelTitle]?.length > 0;
 const [justSelectedCategory, setJustSelectedCategory] = useState(false);
+const [gradingClicked, setGradingClicked] = useState(false);
 
 
 
@@ -520,7 +521,7 @@ function getInitials(name) {
       <div
         className={`${
           collapsed ? "w-[60px]" : "w-1/5"
-        } bg-gray-50 border-r border-gray-200 p-4 flex flex-col transition-all duration-300 relative`}
+        } bg-gray-50 border-r border-gray-200 p-2 flex flex-col transition-all duration-300 relative`}
       >
         <button
           onClick={() => setCollapsed(!collapsed)}
@@ -633,15 +634,117 @@ onClick={() => {
 <li className="hover:underline cursor-pointer">
   {/* 📊 Grading header */}
   <div
-    onClick={() => setExpandedGrading(!expandedGrading)}
-    className="flex items-center gap-2"
-  >
-    <span className="text-xs">{expandedGrading ? "▼" : "▶"}</span>
-    <span>📊 Grading</span>
-  </div>
+onClick={() => {
+    const newState = !expandedGrading;
+    setExpandedGrading(newState);
+  
+    if (newState) {
+      setUploadPanelTitle("Grading Tasks");
+      setSelectedCategory("Grading Tasks");
+      setGradingClicked(false); // ✅ reset when clicked from sidebar
+  
+      const files = uploadedFiles["Grading Tasks"] || [];
+      if (files.length === 0) {
+        setShowUploadPanel(true);
+        setJustSelectedCategory(true);
+      } else {
+        setShowUploadPanel(false);
+        setJustSelectedCategory(false);
+      }
+    }
+  }}
+  
+  className="flex items-center gap-2 cursor-pointer hover:underline"
+>
+  <span className="text-xs">{expandedGrading ? "▼" : "▶"}</span>
+  <span>📊 Grading Tasks</span>
+</div>
+
 
   {/* 🗂 Tasks section (only if Grading is expanded) */}
   <AnimatePresence initial={false}>
+  {expandedGrading && (
+    <motion.ul
+      initial={{ height: 0, opacity: 0 }}
+      animate={{ height: "auto", opacity: 1 }}
+      exit={{ height: 0, opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="ml-6 mt-1 space-y-1 text-gray-500 text-sm overflow-hidden"
+    >
+
+        {/* Add file with a + */}
+      {/* <li className="flex justify-between items-center">
+        <button
+          className="text-xs text-blue-600 hover:underline"
+          onClick={() => {
+            setUploadPanelTitle("Grading Tasks");
+            setSelectedCategory("Grading Tasks");
+            setShowUploadPanel(true);
+            setJustSelectedCategory(true);
+          }}
+        >
+          + Add File
+        </button>
+      </li> */}
+
+      {/* Map uploaded grading files */}
+      {(uploadedFiles["Grading Tasks"] || []).map((file, idx) => {
+  const isExpanded = expandedTasks === idx;
+  return (
+    <li key={idx}>
+      <div className="flex items-center gap-2">
+        {/* ▼ Arrow to expand/collapse rubric */}
+        <span
+          className="text-xs cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            setExpandedTasks(prev => (prev === idx ? null : idx));
+          }}
+        >
+          {isExpanded ? "▼" : "▶"}
+        </span>
+
+        {/* 📄 Clicking the file name triggers Generate Report */}
+        <span
+         className="cursor-pointer hover:underline truncate max-w-[160px] block"
+          onClick={(e) => {
+            e.stopPropagation(); // avoid triggering arrow toggle
+            setUploadPanelTitle("Grading Tasks");
+            setSelectedCategory("Grading Tasks");
+            // setShowModal(true); 
+            setGradingClicked(true);
+          }}
+        >
+          {file.name}
+        </span>
+      </div>
+
+      {/* Dropdown: Rubric and Submissions */}
+      <AnimatePresence initial={false}>
+        {isExpanded && (
+          <motion.ul
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="ml-6 mt-1 space-y-1 text-gray-400 text-sm overflow-hidden"
+          >
+            <li className="hover:underline cursor-pointer">📝 Rubric</li>
+            <li className="hover:underline cursor-pointer">📁 Student Submissions</li>
+          </motion.ul>
+        )}
+      </AnimatePresence>
+    </li>
+  );
+})}
+
+    </motion.ul>
+  )}
+</AnimatePresence>
+
+
+  {/* FORMAL WITH TASKS */}
+  {/* <AnimatePresence initial={false}>
     {expandedGrading && (
       <motion.ul
         initial={{ height: 0, opacity: 0 }}
@@ -651,7 +754,7 @@ onClick={() => {
         className="ml-6 mt-1 space-y-1 text-gray-500 text-sm overflow-hidden"
       >
         <li className="flex items-center gap-2">
-          {/* Arrow (toggles open/close of sub-items) */}
+       
           <span
             className="text-xs cursor-pointer"
             onClick={(e) => {
@@ -662,7 +765,7 @@ onClick={() => {
             {expandedTasks === "tasks" ? "▼" : "▶"}
           </span>
 
-          {/* Tasks label (opens modal/panel) */}
+         
           <span
   className="cursor-pointer hover:underline"
   onClick={() => {
@@ -679,12 +782,12 @@ onClick={() => {
     }
   }}
 >
-  🗂 Tasks
+  🗂 FileName
 </span>
 
         </li>
 
-        {/* Submenu if expanded */}
+       
         <AnimatePresence initial={false}>
           {expandedTasks === "tasks" && (
             <motion.ul
@@ -695,19 +798,11 @@ onClick={() => {
               className="ml-6 mt-1 space-y-1 text-gray-400 text-sm overflow-hidden"
             >
               <li
-                // onClick={() => {
-                //   setUploadPanelTitle("Rubric");
-                //   setShowUploadPanel(true);
-                // }}
                 className="hover:underline cursor-pointer"
               >
                 📝 Rubric
               </li>
               <li
-                // onClick={() => {
-                //   setUploadPanelTitle("Student Submissions");
-                //   setShowUploadPanel(true);
-                // }}
                 className="hover:underline cursor-pointer"
               >
                 📁 Student Submissions
@@ -717,7 +812,7 @@ onClick={() => {
         </AnimatePresence>
       </motion.ul>
     )}
-  </AnimatePresence>
+  </AnimatePresence> */}
 </li>
 
 
@@ -734,14 +829,16 @@ onClick={() => {
 
       </div>
     ) : (
-      <div className="flex flex-1  mt-auto mb-20">
+        <div className="flex flex-1 items-center justify-center mt-auto mb-20">
         <button
           onClick={() => setShowCourseForm(true)}
-          className=" text-sm font-semibold rounded"
+          className="px-4 py-2 bg-gray-100 text-black text-sm font-semibold rounded hover:cursor-pointer flex items-center gap-2 transition"
         >
-          <span className="text-xl">+</span> Create a new course
+          <span className="text-xl leading-none">+</span>
+          Create a new course
         </button>
       </div>
+      
       
     )
   )}
@@ -828,12 +925,14 @@ onClick={() => {
     {/* Show file table if files exist */}
     {uploadedFiles[selectedCategory]?.length > 0 && (
       <FileTablePage
-        category={selectedCategory}
-        onUploadMore={() => {
-          setShowUploadPanel(true);
-          setJustSelectedCategory(false); // Future uploads aren't considered "just selected"
-        }}
-      />
+      category={selectedCategory}
+      onUploadMore={() => {
+        setShowUploadPanel(true);
+        setJustSelectedCategory(false);
+      }}
+      gradingClicked={gradingClicked} // ✅ Pass as prop
+    />
+    
     )}
 
     {/* Show UploadPanel only if:
