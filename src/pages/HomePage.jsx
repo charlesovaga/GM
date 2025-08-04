@@ -358,8 +358,97 @@
 //   );
 // }
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import useCourseStore from "./courseStore";
+import { motion, AnimatePresence } from "framer-motion";
+import UploadPanel from "./UploadPanel";
+import FileTablePage from "./FileTablePage";
+import GMLogo from "../assets/GM LOGO.png"
+
+// function UploadPanel({ onClose, title }) {
+//   const fileInputRef = useRef(null);
+//   const [isDragging, setIsDragging] = useState(false);
+
+//   const handleButtonClick = () => {
+//     fileInputRef.current.click();
+//   };
+
+//   const handleFileChange = (e) => {
+//     const file = e.target.files[0];
+//     if (file) {
+//       console.log("Selected file:", file);
+//     }
+//   };
+
+//   const handleDrop = (e) => {
+//     e.preventDefault();
+//     setIsDragging(false);
+
+//     const file = e.dataTransfer.files[0];
+//     if (file) {
+//       console.log("Dropped file:", file);
+//     }
+//   };
+
+//   const handleDragOver = (e) => {
+//     e.preventDefault();
+//     setIsDragging(true);
+//   };
+
+//   const handleDragLeave = () => {
+//     setIsDragging(false);
+//   };
+
+//   return (
+//     <div
+//       className="absolute top-0 left-0 w-full h-full bg-gray-100 flex flex-col items-center justify-center z-20"
+//       style={{ maxWidth: 700, marginLeft: "20%" }}
+//       onDrop={handleDrop}
+//       onDragOver={handleDragOver}
+//       onDragLeave={handleDragLeave}
+//     >
+//       <button
+//         onClick={onClose}
+//         className="self-end m-4 text-gray-500 hover:text-gray-800"
+//       >
+//         ✕
+//       </button>
+
+//       <div
+//         className={`bg-white border ${
+//           isDragging ? "border-blue-400" : "border-gray-300"
+//         } rounded-lg p-8 flex flex-col items-center transition-colors`}
+//       >
+//         <h2 className="mb-4 font-semibold">{title}</h2>
+
+//         <button
+//           onClick={handleButtonClick}
+//           className="bg-gray-300 px-6 py-2 rounded mb-2 hover:bg-gray-400"
+//         >
+//           Upload files
+//         </button>
+
+//         <input
+//           type="file"
+//           ref={fileInputRef}
+//           onChange={handleFileChange}
+//           className="hidden"
+//         />
+
+//         <span className="text-sm text-gray-600 mb-4">or</span>
+
+//         <div
+//           className={`text-gray-700 text-sm p-4 border-2 border-dashed rounded ${
+//             isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300"
+//           }`}
+//         >
+//           Drag and drop files here
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
 
 export default function TwoColumnLayout() {
   const [collapsed, setCollapsed] = useState(false);
@@ -367,12 +456,23 @@ export default function TwoColumnLayout() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [error, setError] = useState("");
+  const [showUploadPanel, setShowUploadPanel] = useState(false);
+const [uploadPanelTitle, setUploadPanelTitle] = useState("");
+const [expandedTasks, setExpandedTasks] = useState(null);
+const [expandedGrading, setExpandedGrading] = useState(false);
+const uploadedFiles = useCourseStore((state) => state.uploadedFiles);
+const [showFileTablePage, setShowFileTablePage] = useState(false);
+const addFiles = useCourseStore((state) => state.addFiles);
+
+
+
+
 
   const { courses, setCourse, deleteCourse } = useCourseStore();
 
   const [collapsedCourses, setCollapsedCourses] = useState({});
   const [expandedCourse, setExpandedCourse] = useState(null);
-
+  const userFullName = "Pascal Ovaga";
 
 const toggleCourseCollapse = (title) => {
   setCollapsedCourses((prev) => ({
@@ -401,13 +501,21 @@ const toggleCourseCollapse = (title) => {
     setShowCourseForm(false);
   };
 
+
+
+function getInitials(name) {
+  const parts = name.trim().split(" ");
+  if (parts.length === 1) return parts[0][0];
+  return parts[0][0] + parts[1][0];
+}
+
   return (
     <div className="flex h-screen">
       {/* Sidebar */}
       <div
         className={`${
           collapsed ? "w-[60px]" : "w-1/5"
-        } bg-white border-r p-4 flex flex-col transition-all duration-300 relative`}
+        } bg-gray-50 border-r border-gray-200 p-4 flex flex-col transition-all duration-300 relative`}
       >
         <button
           onClick={() => setCollapsed(!collapsed)}
@@ -416,11 +524,17 @@ const toggleCourseCollapse = (title) => {
           {collapsed ? "→" : "←"}
         </button>
 
-        {!collapsed && (
-          <div className="mb-4 p-2 font-semibold flex items-center justify-center text-gray-700">
-            Logo
-          </div>
-        )}
+        {/* GM Logo always visible */}
+  <div
+    className={`mb-4 flex items-center justify-center ${
+      collapsed ? "w-full" : "justify-start gap-2"
+    }`}
+  >
+  <img src={GMLogo} alt="GM" className="w-5 h-5" />
+    {!collapsed && (
+      <span className="font-semibold text-gray-700 select-none">GM</span>
+    )}
+  </div>
 
         {/* Courses Section */}
         <div className="flex-1 overflow-y-auto flex flex-col">
@@ -453,6 +567,7 @@ const toggleCourseCollapse = (title) => {
             </span>
             {c.title}
           </div>
+          
           <button
             onClick={() => deleteCourse(c.title)}
             className="text-xs text-red-500 hover:underline"
@@ -462,12 +577,113 @@ const toggleCourseCollapse = (title) => {
         </div>
 
         {isExpanded && (
-          <ul className="ml-6 mt-2 space-y-1 text-gray-600">
-            <li className="hover:underline cursor-pointer">📘 Syllables</li>
-            <li className="hover:underline cursor-pointer">🖼 Course Slides</li>
-            <li className="hover:underline cursor-pointer">📊 Grading</li>
-          </ul>
-        )}
+  <ul className="ml-6 mt-2 space-y-1 text-gray-600">
+    <li
+      onClick={() => {
+        setUploadPanelTitle("Syllables");
+        setShowUploadPanel(true);
+      }}
+      className="hover:underline cursor-pointer"
+    >
+      📘 Syllables
+    </li>
+    <li
+      onClick={() => {
+        setUploadPanelTitle("Course Slides");
+        setShowUploadPanel(true);
+      }}
+      className="hover:underline cursor-pointer"
+    >
+      🖼 Course Slides
+    </li>
+ 
+
+<li className="hover:underline cursor-pointer">
+  {/* 📊 Grading header */}
+  <div
+    onClick={() => setExpandedGrading(!expandedGrading)}
+    className="flex items-center gap-2"
+  >
+    <span className="text-xs">{expandedGrading ? "▼" : "▶"}</span>
+    <span>📊 Grading</span>
+  </div>
+
+  {/* 🗂 Tasks section (only if Grading is expanded) */}
+  <AnimatePresence initial={false}>
+    {expandedGrading && (
+      <motion.ul
+        initial={{ height: 0, opacity: 0 }}
+        animate={{ height: "auto", opacity: 1 }}
+        exit={{ height: 0, opacity: 0 }}
+        transition={{ duration: 0.3 }}
+        className="ml-6 mt-1 space-y-1 text-gray-500 text-sm overflow-hidden"
+      >
+        <li className="flex items-center gap-2">
+          {/* Arrow (toggles open/close of sub-items) */}
+          <span
+            className="text-xs cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent text click trigger
+              setExpandedTasks((prev) => (prev === "tasks" ? null : "tasks"));
+            }}
+          >
+            {expandedTasks === "tasks" ? "▼" : "▶"}
+          </span>
+
+          {/* Tasks label (opens modal/panel) */}
+          <span
+            className="cursor-pointer hover:underline"
+            onClick={() => {
+              setUploadPanelTitle("Tasks");
+              setShowUploadPanel(true); // your modal logic
+            }}
+          >
+            🗂 Tasks
+          </span>
+        </li>
+
+        {/* Submenu if expanded */}
+        <AnimatePresence initial={false}>
+          {expandedTasks === "tasks" && (
+            <motion.ul
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="ml-6 mt-1 space-y-1 text-gray-400 text-sm overflow-hidden"
+            >
+              <li
+                // onClick={() => {
+                //   setUploadPanelTitle("Rubric");
+                //   setShowUploadPanel(true);
+                // }}
+                className="hover:underline cursor-pointer"
+              >
+                📝 Rubric
+              </li>
+              <li
+                // onClick={() => {
+                //   setUploadPanelTitle("Student Submissions");
+                //   setShowUploadPanel(true);
+                // }}
+                className="hover:underline cursor-pointer"
+              >
+                📁 Student Submissions
+              </li>
+            </motion.ul>
+          )}
+        </AnimatePresence>
+      </motion.ul>
+    )}
+  </AnimatePresence>
+</li>
+
+
+
+
+  </ul>
+)}
+
       </li>
     );
   })}
@@ -476,15 +692,38 @@ const toggleCourseCollapse = (title) => {
 
       </div>
     ) : (
-      <div className="flex flex-1 items-center justify-center mt-auto mb-20">
+      <div className="flex flex-1  mt-auto mb-20">
         <button
           onClick={() => setShowCourseForm(true)}
-          className="bg-gray-100 px-4 py-2 text-sm font-semibold rounded shadow"
+          className=" text-sm font-semibold rounded"
         >
-          + Create a new course
+          <span className="text-xl">+</span> Create a new course
         </button>
       </div>
+      
     )
+  )}
+  
+   
+
+  
+</div>
+ {/* Sidebar footer */}
+    <div
+  className={`mt-auto pt-4 border-t border-gray-200 flex items-center ${
+    collapsed ? "justify-center" : "justify-start"
+  }`}
+>
+  {/* Blue circle always with initials */}
+  <div className="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-semibold uppercase select-none">
+    {getInitials(userFullName)}
+  </div>
+
+  {/* Full name text only when sidebar is expanded */}
+  {!collapsed && (
+    <span className="ml-2 text-gray-700 font-medium select-none">
+      {userFullName}
+    </span>
   )}
 </div>
 
@@ -499,6 +738,7 @@ const toggleCourseCollapse = (title) => {
             className="absolute top-0 left-0 w-full h-full bg-white shadow-lg z-10 p-6"
             style={{ maxWidth: 400 }}
           >
+            
             <h2 className="text-lg font-semibold mb-4">Create Course</h2>
 
             <input
@@ -530,14 +770,52 @@ const toggleCourseCollapse = (title) => {
               >
                 Save
               </button>
+              
             </div>
+            
           </div>
         )}
+        
 
         {/* Main Content View */}
         {/* <h1 className="text-2xl font-semibold mb-4">Your Workspace</h1>
         <p className="text-gray-600">This is the main content area.</p> */}
-      </div>
+        
+        {showUploadPanel && (
+        <UploadPanel
+  category={uploadPanelTitle}
+  onFilesUploaded={(category, files) => {
+    if (courses.length === 0) {
+      alert("Please create a course before uploading files.");
+      return;
+    }
+  
+    addFiles(category, files);
+    setShowUploadPanel(false);
+    setShowFileTablePage(true);
+  }}
+  
+  
+  title="Upload Panel"
+/>
+
+)}
+{courses.length > 0 && Object.keys(uploadedFiles).length > 0 && (
+  <FileTablePage onUploadMore={() => setShowUploadPanel(true)} />
+)}
+
+
+
+        </div>
+     
+
+
+
+
+
+
+
+
     </div>
   );
 }
