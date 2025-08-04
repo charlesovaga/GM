@@ -463,6 +463,11 @@ const [expandedGrading, setExpandedGrading] = useState(false);
 const uploadedFiles = useCourseStore((state) => state.uploadedFiles);
 const [showFileTablePage, setShowFileTablePage] = useState(false);
 const addFiles = useCourseStore((state) => state.addFiles);
+const [selectedCategory, setSelectedCategory] = useState(null);
+const filesExist = uploadedFiles[uploadPanelTitle]?.length > 0;
+const [justSelectedCategory, setJustSelectedCategory] = useState(false);
+
+
 
 
 
@@ -578,24 +583,51 @@ function getInitials(name) {
 
         {isExpanded && (
   <ul className="ml-6 mt-2 space-y-1 text-gray-600">
-    <li
-      onClick={() => {
-        setUploadPanelTitle("Syllables");
-        setShowUploadPanel(true);
-      }}
-      className="hover:underline cursor-pointer"
-    >
-      📘 Syllables
-    </li>
-    <li
-      onClick={() => {
-        setUploadPanelTitle("Course Slides");
-        setShowUploadPanel(true);
-      }}
-      className="hover:underline cursor-pointer"
-    >
-      🖼 Course Slides
-    </li>
+   <li
+onClick={() => {
+    setUploadPanelTitle("Syllables");
+    setSelectedCategory("Syllables");
+    const files = uploadedFiles["Syllables"] || [];
+  
+    if (files.length === 0) {
+      setShowUploadPanel(true);     // Only trigger modal if no file yet
+      setJustSelectedCategory(true);
+    } else {
+      setShowUploadPanel(false);    // Prevent modal from showing again
+      setJustSelectedCategory(false);
+    }
+  }}
+  
+  className="hover:underline cursor-pointer"
+>
+  📘 Syllables
+</li>
+
+<li
+//   onClick={() => {
+//     setUploadPanelTitle("Course Slides");
+//     setSelectedCategory("Course Slides");
+//     setShowUploadPanel(true);
+//   }}
+onClick={() => {
+    setUploadPanelTitle("Course Slides");
+    setSelectedCategory("Course Slides");
+    const files = uploadedFiles["Course Slides"] || [];
+  
+    if (files.length === 0) {
+      setShowUploadPanel(true);     // Only trigger modal if no file yet
+      setJustSelectedCategory(true);
+    } else {
+      setShowUploadPanel(false);    // Prevent modal from showing again
+      setJustSelectedCategory(false);
+    }
+  }}
+  
+  className="hover:underline cursor-pointer"
+>
+  🖼 Course Slides
+</li>
+
  
 
 <li className="hover:underline cursor-pointer">
@@ -632,14 +664,24 @@ function getInitials(name) {
 
           {/* Tasks label (opens modal/panel) */}
           <span
-            className="cursor-pointer hover:underline"
-            onClick={() => {
-              setUploadPanelTitle("Tasks");
-              setShowUploadPanel(true); // your modal logic
-            }}
-          >
-            🗂 Tasks
-          </span>
+  className="cursor-pointer hover:underline"
+  onClick={() => {
+    setUploadPanelTitle("Tasks");
+    setSelectedCategory("Tasks"); // ✅ THIS IS WHAT YOU'RE MISSING
+    const files = uploadedFiles["Tasks"] || [];
+
+    if (files.length === 0) {
+      setShowUploadPanel(true);
+      setJustSelectedCategory(true);
+    } else {
+      setShowUploadPanel(false);
+      setJustSelectedCategory(false);
+    }
+  }}
+>
+  🗂 Tasks
+</span>
+
         </li>
 
         {/* Submenu if expanded */}
@@ -781,28 +823,43 @@ function getInitials(name) {
         {/* <h1 className="text-2xl font-semibold mb-4">Your Workspace</h1>
         <p className="text-gray-600">This is the main content area.</p> */}
         
-        {showUploadPanel && (
-        <UploadPanel
-  category={uploadPanelTitle}
-  onFilesUploaded={(category, files) => {
-    if (courses.length === 0) {
-      alert("Please create a course before uploading files.");
-      return;
-    }
-  
-    addFiles(category, files);
-    setShowUploadPanel(false);
-    setShowFileTablePage(true);
-  }}
-  
-  
-  title="Upload Panel"
-/>
+        {selectedCategory && (
+  <>
+    {/* Show file table if files exist */}
+    {uploadedFiles[selectedCategory]?.length > 0 && (
+      <FileTablePage
+        category={selectedCategory}
+        onUploadMore={() => {
+          setShowUploadPanel(true);
+          setJustSelectedCategory(false); // Future uploads aren't considered "just selected"
+        }}
+      />
+    )}
 
+    {/* Show UploadPanel only if:
+        - showUploadPanel is true
+        - AND (either no files exist or user just selected category for the first time) */}
+{showUploadPanel && (
+  <UploadPanel
+    category={selectedCategory}
+    onFilesUploaded={(category, files) => {
+      if (courses.length === 0) {
+        alert("Please create a course before uploading files.");
+        return;
+      }
+
+      addFiles(category, files);
+      setShowUploadPanel(false);
+      setJustSelectedCategory(false); // Only prevent auto-trigger after first upload
+    }}
+    title="Upload Panel"
+  />
 )}
-{courses.length > 0 && Object.keys(uploadedFiles).length > 0 && (
-  <FileTablePage onUploadMore={() => setShowUploadPanel(true)} />
+
+  </>
 )}
+
+
 
 
 
